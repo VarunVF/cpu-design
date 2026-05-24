@@ -35,7 +35,17 @@ OPCODES = {
     'movalu': OpcodeInfo(0x1a, 1, 1),
     # 0x1b to 0x1f unused
 
-    # TODO add the pseudo jump instructions
+    # Macros for `jcc`
+    'jg': OpcodeInfo(0x0b, 1, 1),
+    'jl': OpcodeInfo(0x0b, 1, 1),
+    'je': OpcodeInfo(0x0b, 1, 1),
+}
+
+JCC_MACROS = {
+    #       NZCV flags
+    'jg': 0b0010,
+    'jl': 0b1000,
+    'je': 0b0100,
 }
 
 REGISTERS = {

@@ -91,7 +91,17 @@ class Assembler:
         elif info.steps == 1 and info.arity == 1:
             # Single argument in the second byte.
             arg_1 = self.resolve_argument(args[0])
-            instruction_code = [info.opcode, arg_1]
+            if instruction in constants.JCC_MACROS:
+                instruction_code = [
+                    constants.OPCODES['movi'].opcode,
+                    constants.REGISTERS['rjmp'],
+                    constants.OPCODES['movi'].opcode,
+                    arg_1,
+                    constants.OPCODES['jcc'].opcode,
+                    constants.JCC_MACROS[instruction]  # flags
+                ]
+            else:
+                instruction_code = [info.opcode, arg_1]
         elif info.steps == 1 and info.arity == 2:
             # Two register arguments in the second byte.
             for arg in args:

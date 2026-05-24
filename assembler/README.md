@@ -15,19 +15,20 @@ movi r0    ; 03 00
 movi 5     ; 03 05
 ```
 
-...we allow the assembler to internally generate 2 instructions when it sees 2 arguments if required, and the programmer only needs to write 1.
+...the assembler internally generates 2 instructions when it sees 2 arguments if required, and the programmer only needs to write 1.
 ```asm
 movi r0, 5
 ```
 
 Also, for conditional jumps, instead of passing the flags to check directly...
 ```asm
-jcc 4, label
+movi rjmp, label
+jcc 0b0010
 ```
 
-...we define "macros" like `jz`, `je`, `jg`, `jl`, etc. which expand to the appropriate `jcc` call.
+...we define "macros" like `je`, `jg`, and `jl` which expand to the appropriate `movi` and `jcc` calls.
 ```asm
-jz label
+jg label
 ```
 
 We decided on this approach to make it easier to write programs.
