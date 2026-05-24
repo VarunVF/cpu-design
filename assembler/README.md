@@ -1,10 +1,8 @@
 # Assembler
 
-Aim to provide 2 output formats:
+The assembler provides 2 output formats:
 - Binary
-- Text form of the hex bytes
-
-We could start with raw binary, then add the text option later.
+- Text form of the hex bytes (using the `-t` option)
 
 ## Notes
 
