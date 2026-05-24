@@ -3,8 +3,9 @@ start:
     nop                 ; no-op
     movi r4, smaller    ; test using label as immediate
 
-    movi r4, 6
-    movi r5, 4
+    ; movi r4, 256      ; numeric literal out of range
+    movi r4, 255
+    movi r5, -4
     cmp r4, r5
     movi r6, greater
     mov rjmp, r6

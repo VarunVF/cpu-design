@@ -8,6 +8,11 @@ class InstructionError(Exception):
     pass
 
 
+class ArgumentError(Exception):
+    """Exception raised for invalid instruction arguments."""
+    pass
+
+
 class Assembler:
     def __init__(self, file_path: str, debug_output: bool):
         self.file_path = file_path
@@ -72,10 +77,6 @@ class Assembler:
             self.assemble_instruction(instruction, args)            
 
     def assemble_instruction(self, instruction: str, args: list[str]):
-        # TODO validate args for each instruction
-        # TODO check for invalid instruction name
-        # TODO ensure 0 <= arguments <= 255
-        
         if instruction not in constants.OPCODES:
             raise InstructionError(f"No such instruction '{instruction}'")
 
@@ -89,44 +90,44 @@ class Assembler:
             instruction_code = [info.opcode, 0x0]
         elif info.steps == 1 and info.arity == 1:
             # Single argument in the second byte.
-            arg_1_raw = args[0]
-            if arg_1_raw in constants.REGISTERS:
-                arg_1 = constants.REGISTERS[arg_1_raw]
-            elif arg_1_raw in self.labels:
-                arg_1 = self.labels[arg_1_raw]
-            else:
-                arg_1 = int(arg_1_raw, 0)
+            arg_1 = self.resolve_argument(args[0])
             instruction_code = [info.opcode, arg_1]
         elif info.steps == 1 and info.arity == 2:
             # Two register arguments in the second byte.
-            # TODO ensure arguments are registers
-            # TODO ensure 0 <= register code <= 15
+            for arg in args:
+                if arg not in constants.REGISTERS:
+                    raise ArgumentError(f"Instruction '{instruction}' expected a register argument, not '{arg}'")
+
             arg_1 = constants.REGISTERS[args[0]]
             arg_2 = constants.REGISTERS[args[1]]
             args_combined = arg_1 << 4 | arg_2
             instruction_code = [info.opcode, args_combined]
         elif info.steps == 2 and info.arity == 2:
             # Two calls to the opcode, one for each byte argument.
-            arg_1_raw, arg_2_raw = args[0], args[1]
-            if arg_1_raw in constants.REGISTERS:
-                arg_1 = constants.REGISTERS[arg_1_raw]
-            elif arg_1_raw in self.labels:
-                arg_1 = self.labels[arg_1_raw]
-            else:
-                arg_1 = int(arg_1_raw, 0)
-        
-            if arg_2_raw in constants.REGISTERS:
-                arg_2 = constants.REGISTERS[arg_2_raw]
-            elif arg_2_raw in self.labels:
-                arg_2 = self.labels[arg_2_raw]
-            else:
-                arg_2 = int(arg_2_raw, 0)
-            
+            arg_1 = self.resolve_argument(args[0])
+            arg_2 = self.resolve_argument(args[1])
             instruction_code = [info.opcode, arg_1, info.opcode, arg_2]
         else:
             assert False, f"Unhandled opcode configuration for '{instruction}': {info.steps=}, {info.arity=}"
         
         self.machine_code += bytes(instruction_code)
+    
+    def resolve_argument(self, argument: str) -> int:
+        if argument in constants.REGISTERS:
+            return constants.REGISTERS[argument]
+        elif argument in self.labels:
+            return self.labels[argument]
+        else:
+            try:
+                number = int(argument, 0)
+            except ValueError:
+                raise ArgumentError(f"Invalid numeric literal '{argument}'")
+            
+            if not -128 <= number <= 255:
+                raise ArgumentError(f"Numeric literal '{argument}' is out of range for 8-bit representation")
+
+            # Convert to 2's complement
+            return number & 0xFF
 
 
 def write_binary_file(filename: str, code: bytes):
