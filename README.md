@@ -49,7 +49,7 @@ The programmer must set the jump register to a valid address before calling JUMP
 | `0x0b` | jcc           | JUMP ON CONDITION    | 1            | FLAGS      | -          |
 | `0x0c` | -             | (UNUSED)             | -            | -          |            |
 | `0x0d` | call          | CALL                 | 1            | ADDRESS    | -          |
-| `0x0e` | ret           | RETURN               | 1            | -          | -          |   
+| `0x0e` | ret           | RETURN               | 1            | -          | -          |
 | `0x0f` | -             | (UNUSED)             | -            | -          |            |
 | `0x10` | add           | ADD                  | 1            | REGISTER A | REGISTER B |
 | `0x11` | sub           | SUB                  | 1            | REGISTER A | REGISTER B |
