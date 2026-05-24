@@ -9,22 +9,54 @@ class InstructionError(Exception):
 
 
 class Assembler:
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, debug_output: bool):
         self.file_path = file_path
+        self.debug_output = debug_output
         self.machine_code = bytes()
+        self.lines: list[str] = []
+        self.labels: dict[str, int] = dict()
     
     def assemble(self) -> bytes:
         with open(self.file_path, 'r') as f:
-            lines = f.readlines()
+            self.lines = f.readlines()
+        
+        self.run_first_pass()
+        if self.debug_output:
+            print(f"Collected labels: {self.labels}")
 
-        for line in lines:
-            # Clean up line
-            # TODO remove ';' comments
+        self.run_second_pass()
+
+        return self.machine_code
+    
+    def run_first_pass(self):
+        """Collect labels and clean comments from self.lines."""
+
+        position = 0
+        transformed_lines: list[str] = []
+        for line in self.lines:
+            line = line.split(';', 1)[0]  # Remove ';' comments
             line = line.strip()
             if line == '':
                 continue
 
-            # TODO check for invalid lines, labels
+            line_parts = line.split(' ', 1)
+            instruction = line_parts[0].strip().lower()
+            if instruction in constants.OPCODES:
+                info = constants.OPCODES[instruction]
+                position += info.steps * 2  # 2 bytes per instruction
+                transformed_lines.append(line)
+            elif (pos := line.find(':')) != 1:
+                label = line[:pos]
+                self.labels[label] = position
+            else:
+                raise InstructionError(f"No such instruction '{instruction}'") 
+
+        self.lines = transformed_lines
+    
+    def run_second_pass(self):
+        """Assemble instructions in self.lines."""
+
+        for line in self.lines:
             line_parts = line.split(' ', 1)
             instruction = line_parts[0]
             args_str = line_parts[1] if len(line_parts) == 2 else ''
@@ -35,10 +67,9 @@ class Assembler:
             args = [arg for arg in args if arg != '']  # Remove empty args
             args = [arg.strip().lower() for arg in args]
 
-            print(f'Assembling instruction {instruction} with args {args}')
+            if self.debug_output:
+                print(f'Assembling instruction {instruction} with args {args}')
             self.assemble_instruction(instruction, args)            
-
-        return self.machine_code
 
     def assemble_instruction(self, instruction: str, args: list[str]):
         # TODO validate args for each instruction
@@ -51,9 +82,8 @@ class Assembler:
         # Validate no. of arguments
         info = constants.OPCODES[instruction]
         if len(args) != info.arity:
-            print(args)
             raise InstructionError(f'Instruction {instruction} takes {info.arity} arguments, but recieved {len(args)}')        
-
+        
         if info.steps == 1 and info.arity == 0:
             # Instruction with no arguments.
             instruction_code = [info.opcode, 0x0]
@@ -62,6 +92,8 @@ class Assembler:
             arg_1_raw = args[0]
             if arg_1_raw in constants.REGISTERS:
                 arg_1 = constants.REGISTERS[arg_1_raw]
+            elif arg_1_raw in self.labels:
+                arg_1 = self.labels[arg_1_raw]
             else:
                 arg_1 = int(arg_1_raw, 0)
             instruction_code = [info.opcode, arg_1]
@@ -78,11 +110,15 @@ class Assembler:
             arg_1_raw, arg_2_raw = args[0], args[1]
             if arg_1_raw in constants.REGISTERS:
                 arg_1 = constants.REGISTERS[arg_1_raw]
+            elif arg_1_raw in self.labels:
+                arg_1 = self.labels[arg_1_raw]
             else:
                 arg_1 = int(arg_1_raw, 0)
         
             if arg_2_raw in constants.REGISTERS:
                 arg_2 = constants.REGISTERS[arg_2_raw]
+            elif arg_2_raw in self.labels:
+                arg_2 = self.labels[arg_2_raw]
             else:
                 arg_2 = int(arg_2_raw, 0)
             
@@ -120,6 +156,7 @@ def main():
     parser.add_argument('filename', help='Path to the assembly source file')
     parser.add_argument('-o', '--output-file', help='Path at which to write the output file')
     parser.add_argument('-t', '--output-text', action='store_true', help='Output a text file instead of a binary file')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Print debugging information for each instruction')
     args = parser.parse_args()
     if args.output_file is None:
         if args.output_text:
@@ -127,7 +164,7 @@ def main():
         else:
             args.output_file = 'out.bin'
     
-    assembler = Assembler(args.filename)
+    assembler = Assembler(args.filename, args.verbose)
     code = assembler.assemble()
 
     if args.output_text:
