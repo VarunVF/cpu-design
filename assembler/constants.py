@@ -6,12 +6,34 @@ class OpcodeInfo:
 
 
 OPCODES = {
-    # TODO add the rest of the instructions
     'nop': OpcodeInfo(0x00, 1, 0),
     'hlt': OpcodeInfo(0x01, 1, 0),
+    'stri': OpcodeInfo(0x02, 2, 2),
+    'movi': OpcodeInfo(0x03, 2, 2),
+    'ldr': OpcodeInfo(0x04, 2, 2),
+    'str': OpcodeInfo(0x05, 2, 2),
     'mov': OpcodeInfo(0x06, 1, 2),
+    # 0x07 unused
+    # 0x08 unused
+    'jmp': OpcodeInfo(0x09, 1, 0),
+    'cmp': OpcodeInfo(0x0a, 1, 2),
+    'jcc': OpcodeInfo(0x0b, 1, 1),
+    # 0x0c unused
+    'call': OpcodeInfo(0x0d, 1, 1),
+    'ret': OpcodeInfo(0x0e, 1, 0),
+    # 0x0f unused
     'add': OpcodeInfo(0x10, 1, 2),
+    'sub': OpcodeInfo(0x11, 1, 2),
+    'shr': OpcodeInfo(0x12, 1, 1),
+    'shl': OpcodeInfo(0x13, 1, 1),
+    'and': OpcodeInfo(0x14, 1, 2),
+    'or': OpcodeInfo(0x15, 1, 2),
+    'not': OpcodeInfo(0x16, 1, 1),
+    'mul': OpcodeInfo(0x17, 1, 2),
+    'div': OpcodeInfo(0x18, 1, 2),
+    'mod': OpcodeInfo(0x19, 1, 2),
     'movalu': OpcodeInfo(0x1a, 1, 1),
+    # 0x1b to 0x1f unused
 
     # TODO add the pseudo jump instructions
 }

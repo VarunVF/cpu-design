@@ -18,7 +18,10 @@ class Assembler:
             lines = f.readlines()
 
         for line in lines:
-            if line == '\n':
+            # Clean up line
+            # TODO remove ';' comments
+            line = line.strip()
+            if line == '':
                 continue
 
             # TODO check for invalid lines, labels
@@ -43,7 +46,7 @@ class Assembler:
         # TODO ensure 0 <= arguments <= 255
         
         if instruction not in constants.OPCODES:
-            raise InstructionError(f'No such instruction {instruction}')
+            raise InstructionError(f"No such instruction '{instruction}'")
 
         # Validate no. of arguments
         info = constants.OPCODES[instruction]
@@ -60,7 +63,7 @@ class Assembler:
             if arg_1_raw in constants.REGISTERS:
                 arg_1 = constants.REGISTERS[arg_1_raw]
             else:
-                arg_1 = int(arg_1_raw)
+                arg_1 = int(arg_1_raw, 0)
             instruction_code = [info.opcode, arg_1]
         elif info.steps == 1 and info.arity == 2:
             # Two register arguments in the second byte.
@@ -72,7 +75,18 @@ class Assembler:
             instruction_code = [info.opcode, args_combined]
         elif info.steps == 2 and info.arity == 2:
             # Two calls to the opcode, one for each byte argument.
-            raise NotImplementedError("Instructions with 2 steps not implemented")
+            arg_1_raw, arg_2_raw = args[0], args[1]
+            if arg_1_raw in constants.REGISTERS:
+                arg_1 = constants.REGISTERS[arg_1_raw]
+            else:
+                arg_1 = int(arg_1_raw, 0)
+        
+            if arg_2_raw in constants.REGISTERS:
+                arg_2 = constants.REGISTERS[arg_2_raw]
+            else:
+                arg_2 = int(arg_2_raw, 0)
+            
+            instruction_code = [info.opcode, arg_1, info.opcode, arg_2]
         else:
             assert False, f"Unhandled opcode configuration for '{instruction}': {info.steps=}, {info.arity=}"
         

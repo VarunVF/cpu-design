@@ -53,8 +53,8 @@ The programmer must set the jump register to a valid address before calling JUMP
 | `0x0f` | -             | (UNUSED)             | -            | -          |            |
 | `0x10` | add           | ADD                  | 1            | REGISTER A | REGISTER B |
 | `0x11` | sub           | SUB                  | 1            | REGISTER A | REGISTER B |
-| `0x12` | rsh           | >>                   | 1            | REGISTER   | -          | 
-| `0x13` | lsh           | <<                   | 1            | REGISTER   | -          | 
+| `0x12` | shr           | >>                   | 1            | REGISTER   | -          | 
+| `0x13` | shl           | <<                   | 1            | REGISTER   | -          | 
 | `0x14` | and           | AND                  | 1            | REGISTER A | REGISTER B |
 | `0x15` | or            | OR                   | 1            | REGISTER A | REGISTER B |
 | `0x16` | not           | NOT                  | 1            | REGISTER   | -          |
@@ -71,7 +71,7 @@ The programmer must set the jump register to a valid address before calling JUMP
 Example:
 
 ```asm
-rsh r2
+shr r2
 ; 12 02
 movi r0, 5
 ; 03 00
